@@ -10,4 +10,6 @@ runs:
 
     - name: "Lint GitHub Actions Workflows"
       shell: bash
-      run: gh actionlint -verbose -shellcheck=shellcheck -pyflakes=pyflakes -color
+      run: |
+        gh extension install cschleiden/gh-actionlint
+        gh actionlint -verbose -shellcheck=shellcheck -pyflakes=pyflakes -color
