@@ -1,4 +1,4 @@
-name: "PR Lint Validation"
+name: "Github Action Linter"
 
 on:
   pull_request:
