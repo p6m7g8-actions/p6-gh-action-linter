@@ -1,0 +1,53 @@
+name: "P6 GHA: Github Action Linter"
+description: "P6 GHA: Github Action Linter"
+author: "Philip M. Gollucci"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v5.0.0
+
+    # 1. actionlint (official runner) :contentReference[oaicite:0]{index=0}
+    - name: Lint workflows with actionlint
+      uses: raven-actions/actionlint@v2
+      with:
+        args: -verbose -color
+
+    # 2. reviewdog wrapper for actionlint (annotations) :contentReference[oaicite:1]{index=1}
+    - name: Annotate actionlint findings via reviewdog
+      uses: reviewdog/action-actionlint@v1
+      with:
+        github_token: ${{ github.token }}
+        actionlint_flags: -verbose
+        fail_on_error: true
+        reporter: github-pr-check
+
+    # 3. yamllint on YAML files :contentReference[oaicite:2]{index=2}
+    - name: Lint YAML files with yamllint
+      uses: ibiqlik/action-yamllint@v3
+      with:
+        file_or_dir: "."
+        strict: true
+
+    # 4. super-linter (a “meta” with many linters) — though it normally uses container, but here we include for completeness :contentReference[oaicite:3]{index=3}
+    - name: Run Super-linter (many languages)
+      uses: github/super-linter@v5
+      with:
+        VALIDATE_WORKFLOW: true
+        DEFAULT_BRANCH: main
+        FAIL_ON_ERROR: true
+
+    # 5. YAML linter action (another variant) :contentReference[oaicite:4]{index=4}
+    - name: YAML file linter (alternative)
+      uses: jacobtomlinson/gha-lint-yaml@master
+      with:
+        path: "**/*.yaml"
+        strict: true
+
+    # Additional optional: fallback verbose direct run (if needed)
+    - name: Direct actionlint verbose fallback
+      shell: bash
+      run: |
+        curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+        ./actionlint -verbose -color .github/workflows
