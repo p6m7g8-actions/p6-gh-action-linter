@@ -37,6 +37,7 @@
     "ibiqlik",
     "jacobtomlinson",
     "oaicite",
+    "pyflakes",
     "releasetag",
     "reviewdog"
   ],
