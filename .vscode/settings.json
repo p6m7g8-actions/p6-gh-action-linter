@@ -35,12 +35,14 @@
     "corepack",
     "cschleiden",
     "elif",
+    "Gollucci",
     "ibiqlik",
     "jacobtomlinson",
     "oaicite",
     "pyflakes",
     "releasetag",
-    "reviewdog"
+    "reviewdog",
+    "shellcheck"
   ],
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"

@@ -13,6 +13,17 @@ runs:
     - name: Checkout code
       uses: actions/checkout@v5.0.0
 
+    - name: Ensure gh is installed (for act)
+      shell: bash
+      run: |
+        if [ "${ACT}" = "true" ]; then
+          echo "Detected act runner. Installing gh via apt..."
+          apt-get update -qq
+          apt-get install -y -qq gh
+        else
+          echo "Running on GitHub-hosted runner, gh is already available."
+        fi
+
     - name: "Lint GitHub Actions Workflows"
       shell: bash
       env:
