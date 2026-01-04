@@ -14,8 +14,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v5.0.0
+    - name: Checkout
+      uses: p6m7g8-actions/checkout@main
 
     - name: Ensure gh is installed (for act)
       if: ${{ inputs.actionlint == 'true' }}
