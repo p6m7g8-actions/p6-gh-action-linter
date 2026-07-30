@@ -29,11 +29,44 @@ runs:
           echo "Running on GitHub-hosted runner, gh is already available."
         fi
 
+    - name: "Install gh-actionlint extension"
+      if: ${{ inputs.actionlint == 'true' }}
+      shell: bash
+      # GH_TOKEN is confined to this step. `gh extension install` authenticates
+      # the release lookup, which keeps it off the anonymous API rate limit that
+      # shared runner IPs share. This step only downloads the binary, it never
+      # executes it, so the third-party extension never sees the token.
+      env:
+        GH_TOKEN: ${{ inputs.gh_token }}
+        ACTIONLINT_EXTENSION_VERSION: "v1.0.3"
+      run: |
+        set -euo pipefail
+
+        # Never silently fall back to an unpinned install: that would download
+        # and execute whatever the latest release of a personal repo happens to
+        # publish, on a required check. Capture the help text first rather than
+        # piping into `grep -q`, which would SIGPIPE gh and trip pipefail.
+        install_help="$(gh extension install --help 2>&1 || true)"
+        case "${install_help}" in
+          *--pin*) ;;
+          *)
+            echo "::error::this gh has no 'extension install --pin'; refusing to install unpinned."
+            gh --version
+            exit 1
+            ;;
+        esac
+
+        # Drop any pre-existing copy so a non-ephemeral runner cannot keep
+        # serving a version other than the pin.
+        gh extension remove actionlint >/dev/null 2>&1 || true
+        gh extension install cschleiden/gh-actionlint \
+          --pin "${ACTIONLINT_EXTENSION_VERSION}"
+        echo "Installed gh-actionlint pinned at ${ACTIONLINT_EXTENSION_VERSION}."
+
     - name: "Lint GitHub Actions Workflows"
       if: ${{ inputs.actionlint == 'true' }}
       shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.gh_token }}
+      # No GH_TOKEN here: linting is local static analysis and needs no
+      # credentials, so the extension binary runs without one.
       run: |
-        gh extension install cschleiden/gh-actionlint
         gh actionlint -verbose -shellcheck=shellcheck -pyflakes=pyflakes -color
